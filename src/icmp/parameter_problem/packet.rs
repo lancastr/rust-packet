@@ -14,15 +14,15 @@
 
 use std::fmt;
 
-use error::*;
-use packet::{Packet as P, PacketMut as PM, AsPacket, AsPacketMut};
-use size;
-use ip;
-use icmp::Kind;
+use crate::error::*;
+use crate::icmp::Kind;
+use crate::ip;
+use crate::packet::{AsPacket, AsPacketMut, Packet as P, PacketMut as PM};
+use crate::size;
 
 /// Parameter Problem packet parser.
 pub struct Packet<B> {
-	buffer: B,
+    buffer: B,
 }
 
 sized!(Packet,
@@ -46,106 +46,104 @@ sized!(Packet,
 	});
 
 impl<B: AsRef<[u8]>> fmt::Debug for Packet<B> {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		f.debug_struct("icmp::parameter_problem::Packet")
-			.field("pointer", &self.pointer())
-			.field("packet", &self.packet())
-			.finish()
-	}
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("icmp::parameter_problem::Packet")
+            .field("pointer", &self.pointer())
+            .field("packet", &self.packet())
+            .finish()
+    }
 }
 
 impl<B: AsRef<[u8]>> Packet<B> {
-	/// Create a Parameter Problem packet without checking the buffer.
-	pub fn unchecked(buffer: B) -> Packet<B> {
-		Packet { buffer }
-	}
+    /// Create a Parameter Problem packet without checking the buffer.
+    pub fn unchecked(buffer: B) -> Packet<B> {
+        Packet { buffer }
+    }
 
-	/// Parse a Parameter Problem packet, checking the buffer contents
-	/// are correct.
-	pub fn new(buffer: B) -> Result<Packet<B>> {
-		use size::header::Min;
+    /// Parse a Parameter Problem packet, checking the buffer contents
+    /// are correct.
+    pub fn new(buffer: B) -> Result<Packet<B>> {
+        use crate::size::header::Min;
 
-		let packet = Packet::unchecked(buffer);
+        let packet = Packet::unchecked(buffer);
 
-		if packet.buffer.as_ref().len() < Self::min() {
-			return Err(ErrorKind::SmallBuffer.into());
-		}
+        if packet.buffer.as_ref().len() < Self::min() {
+            return Err(ErrorKind::SmallBuffer.into());
+        }
 
-		match Kind::from(packet.buffer.as_ref()[0]) {
-			Kind::ParameterProblem =>
-				(),
+        match Kind::from(packet.buffer.as_ref()[0]) {
+            Kind::ParameterProblem => (),
 
-			_ =>
-				return Err(ErrorKind::InvalidPacket.into())
-		}
+            _ => return Err(ErrorKind::InvalidPacket.into()),
+        }
 
-		Ok(packet)
-	}
+        Ok(packet)
+    }
 }
 
 impl<B: AsRef<[u8]>> Packet<B> {
-	/// Convert the packet to its owned version.
-	///
-	/// # Notes
-	///
-	/// It would be nice if `ToOwned` could be implemented, but `Packet` already
-	/// implements `Clone` and the impl would conflict.
-	pub fn to_owned(&self) -> Packet<Vec<u8>> {
-		Packet::unchecked(self.buffer.as_ref().to_vec())
-	}
+    /// Convert the packet to its owned version.
+    ///
+    /// # Notes
+    ///
+    /// It would be nice if `ToOwned` could be implemented, but `Packet` already
+    /// implements `Clone` and the impl would conflict.
+    pub fn to_owned(&self) -> Packet<Vec<u8>> {
+        Packet::unchecked(self.buffer.as_ref().to_vec())
+    }
 }
 
 impl<B: AsRef<[u8]>> AsRef<[u8]> for Packet<B> {
-	fn as_ref(&self) -> &[u8] {
-		use size::Size;
+    fn as_ref(&self) -> &[u8] {
+        use crate::size::Size;
 
-		&self.buffer.as_ref()[.. self.size()]
-	}
+        &self.buffer.as_ref()[..self.size()]
+    }
 }
 
 impl<B: AsRef<[u8]> + AsMut<[u8]>> AsMut<[u8]> for Packet<B> {
-	fn as_mut(&mut self) -> &mut [u8] {
-		use size::Size;
+    fn as_mut(&mut self) -> &mut [u8] {
+        use crate::size::Size;
 
-		let size = self.size();
-		&mut self.buffer.as_mut()[.. size]
-	}
+        let size = self.size();
+        &mut self.buffer.as_mut()[..size]
+    }
 }
 
 impl<'a, B: AsRef<[u8]>> AsPacket<'a, Packet<&'a [u8]>> for B {
-	fn as_packet(&self) -> Result<Packet<&[u8]>> {
-		Packet::new(self.as_ref())
-	}
+    fn as_packet(&self) -> Result<Packet<&[u8]>> {
+        Packet::new(self.as_ref())
+    }
 }
 
 impl<'a, B: AsRef<[u8]> + AsMut<[u8]>> AsPacketMut<'a, Packet<&'a mut [u8]>> for B {
-	fn as_packet_mut(&mut self) -> Result<Packet<&mut [u8]>> {
-		Packet::new(self.as_mut())
-	}
+    fn as_packet_mut(&mut self) -> Result<Packet<&mut [u8]>> {
+        Packet::new(self.as_mut())
+    }
 }
 
 impl<B: AsRef<[u8]>> P for Packet<B> {
-	fn split(&self) -> (&[u8], &[u8]) {
-		let (header, payload) = self.buffer.as_ref().split_at(8);
-		(&header[ .. 5], payload)
-	}
+    fn split(&self) -> (&[u8], &[u8]) {
+        let (header, payload) = self.buffer.as_ref().split_at(8);
+        (&header[..5], payload)
+    }
 }
 
 impl<B: AsRef<[u8]> + AsMut<[u8]>> PM for Packet<B> {
-	fn split_mut(&mut self) -> (&mut [u8], &mut [u8]) {
-		let (header, payload) = self.buffer.as_mut().split_at_mut(8);
-		(&mut header[.. 5], payload)
-	}
+    fn split_mut(&mut self) -> (&mut [u8], &mut [u8]) {
+        let (header, payload) = self.buffer.as_mut().split_at_mut(8);
+        (&mut header[..5], payload)
+    }
 }
 
 impl<B: AsRef<[u8]>> Packet<B> {
-	/// Pointer to the packet area that caused the problem.
-	pub fn pointer(&self) -> u8 {
-		self.buffer.as_ref()[4]
-	}
+    /// Pointer to the packet area that caused the problem.
+    pub fn pointer(&self) -> u8 {
+        self.buffer.as_ref()[4]
+    }
 
-	/// The packet that caused the problem.
-	pub fn packet(&self) -> Result<ip::v4::Packet<&[u8]>> {
-		ip::v4::Packet::new(&self.buffer.as_ref()[8 ..])
-	}
+    /// The packet that caused the problem.
+    pub fn packet(&self) -> Result<ip::v4::Packet<&[u8]>> {
+        ip::v4::Packet::new(&self.buffer.as_ref()[8..])
+    }
 }

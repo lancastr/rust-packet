@@ -17,26 +17,26 @@ extern crate error_chain;
 #[macro_use]
 extern crate bitflags;
 extern crate byteorder;
-extern crate hwaddr;
+extern crate eui48;
 
 mod error;
-pub use error::*;
+pub use crate::error::*;
 
 /// Packet size traits.
 #[macro_use]
 pub mod size;
-pub use size::Size;
+pub use crate::size::Size;
 
 mod packet;
-pub use packet::{Packet, PacketMut, AsPacket, AsPacketMut};
+pub use crate::packet::{AsPacket, AsPacketMut, Packet, PacketMut};
 
 /// Buffer abstractions, dynamic buffers and static buffers.
 pub mod buffer;
-pub use buffer::Buffer;
+pub use crate::buffer::Buffer;
 
 /// Packet builder abstractions.
 pub mod builder;
-pub use builder::Builder;
+pub use crate::builder::Builder;
 
 /// Ethernet packet parser and builder.
 pub mod ether;
