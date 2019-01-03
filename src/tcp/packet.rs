@@ -1,17 +1,3 @@
-//            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-//                    Version 2, December 2004
-//
-// Copyleft (ↄ) meh. <meh@schizofreni.co> | http://meh.schizofreni.co
-//
-// Everyone is permitted to copy and distribute verbatim or modified
-// copies of this license document, and changing it is allowed as long
-// as the name is changed.
-//
-//            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-//   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-//
-//  0. You just DO WHAT THE FUCK YOU WANT TO.
-
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::fmt;
 use std::io::Cursor;
@@ -265,7 +251,6 @@ impl<B: AsRef<[u8]> + AsMut<[u8]>> Packet<B> {
         let checksum = checksum(ip, self.buffer.as_ref());
         self.set_checksum(checksum)
     }
-
 }
 
 /// Checked wrapper for UDP packets.

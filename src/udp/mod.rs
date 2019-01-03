@@ -1,17 +1,3 @@
-//            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-//                    Version 2, December 2004
-//
-// Copyleft (ↄ) meh. <meh@schizofreni.co> | http://meh.schizofreni.co
-//
-// Everyone is permitted to copy and distribute verbatim or modified
-// copies of this license document, and changing it is allowed as long
-// as the name is changed.
-//
-//            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-//   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-//
-//  0. You just DO WHAT THE FUCK YOU WANT TO.
-
 mod packet;
 pub use self::packet::Packet;
 
@@ -69,6 +55,15 @@ pub fn checksum<B: AsRef<[u8]>>(ip: &ip::Packet<B>, buffer: &[u8]) -> u16 {
         }
 
         result += u32::from(value);
+
+        if result > 0xffff {
+            result -= 0xffff;
+        }
+    }
+
+    if let Ok(value) = buffer.read_u8() {
+        let last = u32::from(value) << 8;
+        result += last;
 
         if result > 0xffff {
             result -= 0xffff;
